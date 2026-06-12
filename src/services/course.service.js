@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/courses";
+const API_URL = "https://online-learning-plateform-backend-api.onrender.com/api/courses";
 
 // Send cookies automatically
 axios.defaults.withCredentials = true;
