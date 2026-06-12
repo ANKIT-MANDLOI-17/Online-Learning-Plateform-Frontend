@@ -2,82 +2,112 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import CourseService from "../services/course.service";
 
-const CourseComponent = (props) => {
-  let { currentUser} = props;
+const CourseComponent = ({ currentUser }) => {
   const history = useHistory();
-  const handleTakeToLogin = () => {
-    history.push("/login");
-  };
-  let [courseData, setCourseData] = useState(null);
+
+  const [courseData, setCourseData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-
-    let _id;
-    if (currentUser) {
-      _id = currentUser._id;
-    } else {
-      _id = "";
+    if (!currentUser) {
+      setLoading(false);
+      return;
     }
 
-    if (currentUser.role == "instructor") {
-      CourseService.getInstructorCourses(_id)
-        .then((data) => {
-          console.log(data);
-          setCourseData(data.data);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } else if (currentUser.role == "student") {
-      CourseService.getEnrolledCourses(_id)
-        .then((data) => {
-          console.log(data);
-          setCourseData(data.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-  }, []);
+    const fetchCourses = async () => {
+      try {
+        let response;
 
-  return (
-    <div style={{ padding: "3rem" }}>
-      {!currentUser && (
-        <div>
-          <p>You must login before seeing your courses.</p>
+        if (currentUser.role === "instructor") {
+          response = await CourseService.getInstructorCourses(currentUser._id);
+        } else if (currentUser.role === "student") {
+          response = await CourseService.getEnrolledCourses(currentUser._id);
+        }
+
+        setCourseData(response?.data || []);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [currentUser]);
+
+  if (!currentUser) {
+    return (
+      <div className="container py-5">
+        <div className="card shadow border-0 text-center p-5">
+          <h2>🔒 Login Required</h2>
+
+          <p className="text-muted">Please login to view your courses.</p>
+
           <button
-            onClick={handleTakeToLogin}
-            className="btn btn-primary btn-lg"
+            className="btn btn-primary"
+            onClick={() => history.push("/login")}
           >
-            Take me to login page
+            Go to Login
           </button>
         </div>
-      )}
-      {currentUser && currentUser.role == "instructor" && (
-        <div>
-          <h1>Welcome to instructor's Course page.</h1>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-5">
+      {/* Header */}
+      <div className="text-center mb-5">
+        <h1 className="fw-bold">
+          {currentUser.role === "instructor"
+            ? "👨‍🏫 My Created Courses"
+            : "🎓 My Enrolled Courses"}
+        </h1>
+
+        <p className="text-muted">Manage and explore your learning journey.</p>
+      </div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status"></div>
         </div>
       )}
-      {currentUser && currentUser.role == "student" && (
-        <div>
-          <h1>Welcome to student's Course page.</h1>
-        </div>
+
+      {/* Empty State */}
+      {!loading && courseData.length === 0 && (
+        <div className="alert alert-info text-center">No courses found.</div>
       )}
-      {currentUser && courseData && courseData.length != 0 && (
-        <div>
-          <p>Here's the data we got back from server.</p>
-          {courseData.map((course) => (
-            <div className="card" style={{ width: "18rem" }}>
+
+      {/* Course List */}
+      <div className="row">
+        {courseData.map((course) => (
+          <div key={course._id} className="col-lg-4 col-md-6 mb-4">
+            <div className="card h-100 shadow-sm border-0">
               <div className="card-body">
-                <h5 className="card-title">{course.title}</h5>
-                <p className="card-text">{course.description}</p>
-                <p>Student Count: {course.students.length}</p>
-                <button className="btn btn-primary">{course.price}</button>
-                <br />
+                <h4 className="card-title fw-bold">{course.title}</h4>
+
+                <p className="text-muted">{course.description}</p>
+
+                <hr />
+
+                <p>
+                  <strong>Students:</strong> {course.students.length}
+                </p>
+
+                <p>
+                  <strong>Instructor:</strong>{" "}
+                  {course.instructor?.username || "N/A"}
+                </p>
+
+                <button className="btn btn-success w-100">
+                  ₹{course.price}
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
