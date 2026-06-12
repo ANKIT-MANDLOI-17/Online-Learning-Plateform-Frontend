@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import CourseService from "../services/course.service";
 
 const CourseComponent = (props) => {
-  let { currentUser, setCurrentUser } = props;
+  let { currentUser} = props;
   const history = useHistory();
   const handleTakeToLogin = () => {
     history.push("/login");
