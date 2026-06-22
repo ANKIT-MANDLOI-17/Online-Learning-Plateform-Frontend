@@ -4,7 +4,7 @@ A full-stack Online Learning Platform built using the MERN Stack (MongoDB, Expre
 
 ## 🚀 Live Demo
 
-**Frontend:** https://online-learning-plateform-frontend-qvhf7ex9q.vercel.app/
+**Frontend:** [https://online-learning-plateform-frontend-qvhf7ex9q.vercel.app/](https://online-learning-plateform-frontend-xi.vercel.app/)
 
 **Backend API:** https://online-learning-plateform-backend-api.onrender.com/
 
